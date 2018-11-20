@@ -29,7 +29,7 @@ public class Event {
     public static final int EVENT_PLAYER_VIDEO_SIZE_CHANGE          = 0x10000011;
     public static final int EVENT_PLAYER_PREPARED                   = 0x10000012;
     public static final int EVENT_PLAYER_BAD_INTERLEAVING           = 0x10000013;
-    public static final int EVENT_PLAYER_NOT_SEEK_ABLE              = 0x10000014;
+    public static final int EVENT_PLAYER_NOT_SEEKABLE               = 0x10000014;
     public static final int EVENT_PLAYER_METADATA_UPDATE            = 0x10000015;
     public static final int EVENT_PLAYER_TIMED_TEXT_ERROR           = 0x10000016;
     public static final int EVENT_PLAYER_UNSUPPORTED_SUBTITLE       = 0x10000017;
@@ -42,8 +42,15 @@ public class Event {
 
 
 
-    public static final int EVENT_ERROR_MARK                        = 0x20000000;
-
+    public static final int EVENT_PLAYER_ERROR_MARK                 = 0x20000000;
+    public static final int EVENT_PLAYER_ERROR_COMMON               = 0x20000001;
+    public static final int EVENT_PLAYER_ERROR_UNKNOWN              = 0x20000002;
+    public static final int EVENT_PLAYER_ERROR_SERVER_DIED          = 0x20000003;
+    public static final int EVENT_PLAYER_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK = 0x20000004;
+    public static final int EVENT_PLAYER_ERROR_IO                   = 0x20000005;
+    public static final int EVENT_PLAYER_ERROR_MALFORMED            = 0x20000006;
+    public static final int EVENT_PLAYER_ERROR_UNSUPPORTED          = 0x20000007;
+    public static final int EVENT_PLAYER_ERROR_TIMED_OUT            = 0x20000008;
 
 
     // 数据相关事件
@@ -51,10 +58,16 @@ public class Event {
     public static final int EVENT_DATA_LOAD_START                   = 0x30000001;
     public static final int EVENT_DATA_LOAD_END                     = 0x30000002;
     public static final int EVENT_DATA_LOAD_ERROR                   = 0x30000003;
+    public static final int EVENT_DATA_PROVIDER_ERROR               = 0x30000004;
 
     // 按键事件
     public static final int EVENT_KEYPAD_MARK                       = 0x40000000;
-
+    public static final int EVENT_KEYPAD_UP                         = 0x40000001;
+    public static final int EVENT_KEYPAD_DOWN                       = 0x40000002;
+    public static final int EVENT_KEYPAD_LEFT                       = 0x40000003;
+    public static final int EVENT_KEYPAD_RIGHT                      = 0x40000004;
+    public static final int EVENT_KEYPAD_OK                         = 0x40000005;
+    public static final int EVENT_KEYPAD_MENU                       = 0x40000006;
 
     public static final int EVENT_CUSTOM_MARK                       = 0xA0000000;
 
@@ -68,8 +81,16 @@ public class Event {
     private int eventCode;
     private Bundle eventData;
 
+    public Event(){
+        // TODO
+    }
+
     public Event(String eventsource, int eventcode){
         this(eventsource, null, eventcode, null);
+    }
+
+    public Event(String eventsource, int eventcode, Bundle eventdata){
+        this(eventsource, null, eventcode, eventdata);
     }
 
     public Event(String eventsource, String eventtarget, int eventcode){
@@ -105,6 +126,10 @@ public class Event {
 
     public boolean isPlayerEvent(){
         return (eventCode & EVENT_MARK) == EVENT_PLAYER_MARK;
+    }
+
+    public boolean isPlayerErrorEvent(){
+        return (eventCode & EVENT_MARK) == EVENT_PLAYER_ERROR_MARK;
     }
 
     public boolean isKeyPadEvent(){

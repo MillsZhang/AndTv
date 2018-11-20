@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import mills.zhang.andplayer.panel.IPanel;
+import mills.zhang.andplayer.event.interceptor.IEventInterceptor;
 
 /**
  * Created by zhangmd on 2018/8/21.
@@ -33,7 +33,6 @@ public class EventDispatcher {
     private Handler dispatcherHandler;
 
 
-    private static EventDispatcher instance;
     private EventDispatcher(){
         eventReceivers = new ArrayList<WeakReference<IEventReceiver>>();
         eventComparator = new Comparator<WeakReference<IEventReceiver>>() {
@@ -72,18 +71,11 @@ public class EventDispatcher {
 
         eventInterceptors = new LinkedHashSet<IEventInterceptor>();
     }
-    public static EventDispatcher getInstance(){
-        if(instance == null){
-            synchronized (EventDispatcher.class){
-                if(instance == null){
-                    instance = new EventDispatcher();
-                }
-            }
-        }
-        return instance;
+    public static EventDispatcher newInstance(){
+        return new EventDispatcher();
     }
 
-    public synchronized boolean registerEventReceiver(IEventReceiver receiver){
+    public synchronized boolean addEventReceiver(IEventReceiver receiver){
         Iterator<WeakReference<IEventReceiver>> iterator = eventReceivers.iterator();
         while (iterator.hasNext()){
             WeakReference<IEventReceiver> ref = iterator.next();
@@ -99,7 +91,7 @@ public class EventDispatcher {
         return true;
     }
 
-    public synchronized boolean unregisterEventReceiver(IEventReceiver receiver){
+    public synchronized boolean removeEventReceiver(IEventReceiver receiver){
         return eventReceivers.remove(receiver);
     }
 
@@ -149,8 +141,6 @@ public class EventDispatcher {
             return;
         }
 
-        boolean isKeyPadEvent = event.isKeyPadEvent();
-
         String source = event.getEventSource();
         String target = event.getEventTarget();
 
@@ -174,21 +164,9 @@ public class EventDispatcher {
                 }
                 // 过滤事件
                 if(receiver.filter(event)){
-
-                    // 按键事件优先考虑可见的Panel
-                    if(isKeyPadEvent){
-                        if(receiver instanceof IPanel){
-                            if(((IPanel) receiver).isShown()){
-                                if(receiver.handleEvent(event)){
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        // 如果事件被拦截，则不继续传递
-                        if(receiver.handleEvent(event)){
-                            break;
-                        }
+                    // 如果事件被拦截，则不继续传递
+                    if(receiver.handleEvent(event)){
+                        break;
                     }
                 }
             }

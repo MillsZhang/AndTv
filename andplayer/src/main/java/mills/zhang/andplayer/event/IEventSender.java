@@ -9,4 +9,5 @@ public interface IEventSender {
 
     String getSenderName();
 
+    void setEventDispatcher(EventDispatcher dispatcher);
 }
