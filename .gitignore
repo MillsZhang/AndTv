@@ -13,6 +13,9 @@ bin/
 gen/
 out/
 
+# TO-DO-LIST
+TO-DO-LIST
+
 # Gradle files
 .gradle/
 build/

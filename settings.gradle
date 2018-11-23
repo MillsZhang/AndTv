@@ -1,1 +1,1 @@
-include ':app', ':andplayer', ':annotarion', ':annotaion-compiler'
+include ':app', ':andplayer', ':annotation', ':annotation-compiler', ':common'
