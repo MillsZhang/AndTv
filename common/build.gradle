@@ -9,6 +9,11 @@ android {
         versionCode 1
         versionName "1.0"
 
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [module: "common"]
+            }
+        }
     }
 
     buildTypes {
@@ -28,5 +33,5 @@ dependencies {
     api 'com.android.support:recyclerview-v7:25.0.0'
 
     api project(':annotation')
-    annotationProcessor project(':annotation-compiler')
+//    annotationProcessor project(':annotation-compiler')
 }

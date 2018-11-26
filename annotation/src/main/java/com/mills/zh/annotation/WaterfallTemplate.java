@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)
-public @interface Waterfall {
+public @interface WaterfallTemplate {
 
     String template() default "";
 }

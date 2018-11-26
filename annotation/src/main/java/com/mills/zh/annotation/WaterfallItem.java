@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface WaterfallItem {
 
-    String type() default "base";
+    String type() default "";
 
     int layout() default -1;
 }

@@ -9,25 +9,23 @@ import javax.tools.Diagnostic.Kind;
  */
 
 public class Logger {
-    private static final String TAG = "[Annotation]";
-
     private Messager messager;
 
     public Logger(Messager messager){
         this.messager = messager;
     }
 
-    public void info(CharSequence info){
-        messager.printMessage(Kind.NOTE, TAG + info);
+    public void info(String tag, CharSequence info){
+        messager.printMessage(Kind.NOTE, "[" + tag + "]" + info);
     }
 
-    public void error(CharSequence error){
-        messager.printMessage(Kind.ERROR, TAG + error);
+    public void error(String tag, CharSequence error){
+        messager.printMessage(Kind.ERROR, "[" + tag + "]" + error);
     }
 
-    public void error(Throwable error) {
+    public void error(String tag, Throwable error) {
         if (null != error) {
-            messager.printMessage(Diagnostic.Kind.ERROR, TAG + error.getMessage() + "\n" + formatStackTrace(error.getStackTrace()));
+            messager.printMessage(Diagnostic.Kind.ERROR, "[" + tag + "]" + error.getMessage() + "\n" + formatStackTrace(error.getStackTrace()));
         }
     }
 

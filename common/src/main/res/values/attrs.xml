@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="TvFocus">
+        <attr name="focusSrc" format="reference"/>
+        <attr name="needScale" format="boolean"/>
+        <attr name="needFocus" format="boolean"/>
+        <attr name="scaleType" format="integer"/>
+        <attr name="supportMultiLayer" format="boolean"/>
+    </declare-styleable>
+    
+
+</resources>

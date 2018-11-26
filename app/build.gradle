@@ -8,6 +8,12 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [module: "app"]
+            }
+        }
     }
     buildTypes {
         release {
@@ -21,4 +27,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation project(':common')
+
+    annotationProcessor project(':annotation-compiler')
 }

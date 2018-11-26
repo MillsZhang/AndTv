@@ -5,6 +5,7 @@ import com.mills.zh.annotation.WaterfallTemplate;
 import com.mills.zh.annotation.model.Template;
 import com.mills.zh.compiler.utils.Constants;
 import com.mills.zh.compiler.utils.Logger;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
@@ -14,6 +15,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -49,12 +51,15 @@ import static javax.lang.model.element.Modifier.STATIC;
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes({Constants.ANNOTATION_TYPE_WATERFALL_TEMPLATE})
-public class WaterfallProcessor extends AbstractProcessor {
+public class WaterfallTemplateProcessor extends AbstractProcessor {
+    private static final String TAG = ":WaterfallTemplate";
 
     private Logger logger;
     private Filer filer;
+    private String module;
 
-    private Element baseTemplate;
+    private ClassName baseTemplate = ClassName.get(Constants.WATERFALL_COMMON_PKG, Constants.WATERFALL_BASE_TEMPLATE_CLASS);
+
     private HashMap<String, Template> templates;
 
     @Override
@@ -63,11 +68,20 @@ public class WaterfallProcessor extends AbstractProcessor {
 
         logger = new Logger(processingEnvironment.getMessager());
         filer = processingEnvironment.getFiler();
+        Map<String, String> options = processingEnv.getOptions();
+        if (MapUtils.isNotEmpty(options)) {
+            module = options.get("module");
+        }
+        if (StringUtils.isEmpty(module)) {
+            module = "default";
+        }
+
+        logger.info(module+TAG, "init");
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
-        logger.info("process start");
+        logger.info(module+TAG, "process start");
         if(CollectionUtils.isNotEmpty(set)){
             Set<? extends Element> elements = roundEnvironment.getElementsAnnotatedWith(WaterfallTemplate.class);
 
@@ -76,20 +90,15 @@ public class WaterfallProcessor extends AbstractProcessor {
                     //
                     for(Element element : elements){
                         if(element.getKind() != ElementKind.CLASS){
-                            throw new IllegalClassFormatException("Only class can be annotated width " + Constants.ANNOTATION_TYPE_WATERFALL_TEMPLATE);
+                            throw new IllegalClassFormatException("WaterfallTemplate: Only class can be annotated width " + Constants.ANNOTATION_TYPE_WATERFALL_TEMPLATE);
                         }
                         if(!element.getModifiers().contains(Modifier.PUBLIC)){
-                            throw new IllegalClassFormatException("the class is not public!");
+                            throw new IllegalClassFormatException("WaterfallTemplate: the class is not public!");
                         }
 
                         TypeMirror tm = element.asType();
                         WaterfallTemplate waterfall = element.getAnnotation(WaterfallTemplate.class);
-                        logger.info("Find WaterfallTemplate template annotation:" + tm.toString());
-
-                        if("base".equals(waterfall.template())){
-                            baseTemplate = element;
-                            continue;
-                        }
+                        logger.info(module+TAG, "Find WaterfallTemplate template annotation:" + tm.toString());
 
                         String templateName = waterfall.template();
                         if(StringUtils.isEmpty(templateName)){
@@ -100,25 +109,21 @@ public class WaterfallProcessor extends AbstractProcessor {
                             templates = new HashMap<String, Template>();
                         }
                         if(templates.containsKey(templateName)){
-                            logger.error("Find reduplicate template!");
+                            logger.error(module+TAG, "Find reduplicate template!");
                         } else {
                             Template tmp = new Template();
-                            tmp.setTemplate(Constants.WATERFALL_TEMPLATE_PREFIX + templateName);
-                            tmp.setClazz(element.getClass());
+                            tmp.setTemplate(Constants.WATERFALL_TEMPLATE_PREFIX + templateName.toUpperCase());
+                            tmp.setTypeMirror(element.asType());
                             templates.put(templateName, tmp);
                         }
                     }
 
-                    if(baseTemplate == null){
-                        throw new IllegalStateException("Can't find base waterfall template!!!");
-                    }
-
                     if(templates != null){
-                        generateWaterfallClass();
+                        generateWaterfallTemplateClass();
                     }
                 }
             } catch (Exception e) {
-                logger.error(e);
+                logger.error(module+TAG, e);
             }
             return true;
         }
@@ -126,10 +131,10 @@ public class WaterfallProcessor extends AbstractProcessor {
         return false;
     }
 
-    private void generateWaterfallClass(){
+    private void generateWaterfallTemplateClass(){
         try {
-
-            TypeSpec.Builder builder = TypeSpec.interfaceBuilder(Constants.WATERFALL_CLASS)
+            logger.info(module+TAG, "generateWaterfallTemplateClass");
+            TypeSpec.Builder builder = TypeSpec.classBuilder(Constants.WATERFALL_TEMPLATE_CLASS)
                     .addModifiers(PUBLIC);
 
             // init block template types
@@ -138,7 +143,7 @@ public class WaterfallProcessor extends AbstractProcessor {
 
                 Map.Entry<String, Template> item = iterator.next();
 
-                FieldSpec field = FieldSpec.builder(String.class, Constants.WATERFALL_TEMPLATE_PREFIX + item.getKey().toUpperCase())
+                FieldSpec field = FieldSpec.builder(String.class, item.getValue().getTemplate())
                         .addModifiers(PUBLIC, STATIC, FINAL)
                         .initializer("$S", item.getKey())
                         .build();
@@ -147,9 +152,13 @@ public class WaterfallProcessor extends AbstractProcessor {
             }
 
             // init block template map
-            TypeName mapType = ParameterizedTypeName.get(HashMap.class, String.class, baseTemplate.getClass());
+            TypeName mapType = ParameterizedTypeName.get(
+                    ClassName.get(HashMap.class),
+                    ClassName.get(String.class),
+                    baseTemplate
+                    );
             FieldSpec templateMapField = FieldSpec.builder(mapType, Constants.WATERFALL_TEMPLATES)
-                    .addModifiers(PRIVATE, STATIC)
+                    .addModifiers(PRIVATE, STATIC, FINAL)
                     .initializer("new $T($L)", mapType, templates.size())
                     .build();
             builder.addField(templateMapField);
@@ -159,7 +168,7 @@ public class WaterfallProcessor extends AbstractProcessor {
             while (iterator != null && iterator.hasNext()){
                 Map.Entry<String, Template> item = iterator.next();
 
-                initMapBuilder.add("$S.put($S, new $T())", Constants.WATERFALL_TEMPLATES, item.getKey(), item.getValue().getClazz());
+                initMapBuilder.add(Constants.WATERFALL_TEMPLATES + ".put($S, new $T());\n", item.getKey(), ClassName.get(item.getValue().getTypeMirror()));
             }
             builder.addStaticBlock(initMapBuilder.build());
 
@@ -167,8 +176,8 @@ public class WaterfallProcessor extends AbstractProcessor {
             MethodSpec.Builder method = MethodSpec.methodBuilder(Constants.WATERFALL_METHOD_GET_TEMPLATE)
                     .addModifiers(PUBLIC, STATIC)
                     .addParameter(String.class, "template")
-                    .returns(TypeName.get(baseTemplate.asType()));
-            method.addStatement("return $S.get($S)", Constants.WATERFALL_TEMPLATES, "template");
+                    .returns(baseTemplate);
+            method.addStatement("return " + Constants.WATERFALL_TEMPLATES + ".get(template)");
             builder.addMethod(method.build());
 
             // output WaterfallTemplate interface java file
