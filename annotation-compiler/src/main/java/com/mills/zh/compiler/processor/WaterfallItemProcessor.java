@@ -2,9 +2,12 @@ package com.mills.zh.compiler.processor;
 
 import com.google.auto.service.AutoService;
 import com.mills.zh.annotation.WaterfallItem;
-import com.mills.zh.annotation.model.Item;
+import com.mills.zh.compiler.model.Item;
 import com.mills.zh.compiler.utils.Constants;
 import com.mills.zh.compiler.utils.Logger;
+import com.mills.zh.compiler.utils.RClassScaner;
+import com.mills.zh.compiler.utils.RClassScaner.Id;
+import com.mills.zh.compiler.utils.RClassScaner.QualifiedId;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
@@ -12,6 +15,7 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.sun.source.util.Trees;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -38,6 +42,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
@@ -54,9 +60,14 @@ import static javax.lang.model.element.Modifier.STATIC;
 public class WaterfallItemProcessor extends AbstractProcessor {
     private static final String TAG = ":WaterfallItem";
 
+    private Elements elementUtils;
+    private Types typeUtils;
+    private Trees trees;
     private Logger logger;
     private Filer filer;
     private String module;
+
+    private RClassScaner scaner;
 
     private int itemTypeStartIdx = Constants.WATERFALL_ITEM_TYPE_START_INDEX;
     private ClassName baseItem = ClassName.get(Constants.WATERFALL_COMMON_PKG, Constants.WATERFALL_BASE_ITEM_CLASS);
@@ -66,8 +77,17 @@ public class WaterfallItemProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
         super.init(processingEnvironment);
 
+        elementUtils = processingEnvironment.getElementUtils();
+        typeUtils = processingEnvironment.getTypeUtils();
         logger = new Logger(processingEnvironment.getMessager());
         filer = processingEnvironment.getFiler();
+        try {
+            trees = Trees.instance(processingEnv);
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        scaner = new RClassScaner(trees, elementUtils, typeUtils);
+
         Map<String, String> options = processingEnv.getOptions();
         if (MapUtils.isNotEmpty(options)) {
             module = options.get("module");
@@ -81,7 +101,12 @@ public class WaterfallItemProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
         logger.info(module+TAG, "process start");
+
         if(CollectionUtils.isNotEmpty(set)){
+
+            scaner.scan(roundEnvironment);
+            logger.info(module+TAG, "process after RClass scan");
+
             Set<? extends Element> elements = roundEnvironment.getElementsAnnotatedWith(WaterfallItem.class);
 
             try {
@@ -114,7 +139,11 @@ public class WaterfallItemProcessor extends AbstractProcessor {
                             item.setTypeName(Constants.WATERFALL_ITEM_TYPE_PREFIX + type.toUpperCase());
                             item.setType(itemTypeStartIdx++);
                             item.setTypeMirror(element.asType());
-                            item.setLayout(waterfallitem.layout());
+
+                            QualifiedId qualifiedId = scaner.elementToQualifiedId(element, waterfallitem.layout());
+                            Id id = scaner.getId(qualifiedId);
+
+                            item.setLayout(id.getCode());
                             items.put(type, item);
                         }
                     }
@@ -219,7 +248,7 @@ public class WaterfallItemProcessor extends AbstractProcessor {
             method1.addCode(block1.build());
             builder.addMethod(method1.build());
 
-            // TODO other getItem method
+            // other getItem method
             MethodSpec.Builder method2 = MethodSpec.methodBuilder(Constants.WATERFALL_ITEMS_METHOD_GET_ITEM)
                     .addModifiers(PUBLIC, STATIC)
                     .addParameter(ClassName.get(Constants.ANDROID_APP_PKG, Constants.ACTIVITY), "activity")

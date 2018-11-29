@@ -16,6 +16,9 @@ out/
 # TO-DO-LIST
 TO-DO-LIST
 
+#local repo
+repo/
+
 # Gradle files
 .gradle/
 build/

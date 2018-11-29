@@ -1,4 +1,4 @@
-package com.mills.zh.waterfall.templates;
+package com.mills.zh.common.waterfall.templates;
 
 import com.mills.zh.annotation.WaterfallTemplate;
 import com.mills.zh.common.waterfall.Template.FlexibleTemplate;

@@ -1,4 +1,4 @@
-package com.mills.zh.annotation.model;
+package com.mills.zh.compiler.model;
 
 import javax.lang.model.type.TypeMirror;
 

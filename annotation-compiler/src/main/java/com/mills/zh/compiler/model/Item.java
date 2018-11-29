@@ -1,4 +1,6 @@
-package com.mills.zh.annotation.model;
+package com.mills.zh.compiler.model;
+
+import com.squareup.javapoet.CodeBlock;
 
 import javax.lang.model.type.TypeMirror;
 
@@ -9,7 +11,7 @@ import javax.lang.model.type.TypeMirror;
 public class Item {
     private String typeName;
     private int type;
-    private int layout;
+    private CodeBlock layout;
     private TypeMirror typeMirror;
 
     public Item(){
@@ -32,11 +34,11 @@ public class Item {
         this.type = type;
     }
 
-    public int getLayout() {
+    public CodeBlock getLayout() {
         return layout;
     }
 
-    public void setLayout(int layout) {
+    public void setLayout(CodeBlock layout) {
         this.layout = layout;
     }
 

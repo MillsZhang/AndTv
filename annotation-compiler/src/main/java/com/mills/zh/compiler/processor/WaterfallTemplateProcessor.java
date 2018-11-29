@@ -2,7 +2,7 @@ package com.mills.zh.compiler.processor;
 
 import com.google.auto.service.AutoService;
 import com.mills.zh.annotation.WaterfallTemplate;
-import com.mills.zh.annotation.model.Template;
+import com.mills.zh.compiler.model.Template;
 import com.mills.zh.compiler.utils.Constants;
 import com.mills.zh.compiler.utils.Logger;
 import com.squareup.javapoet.ClassName;
