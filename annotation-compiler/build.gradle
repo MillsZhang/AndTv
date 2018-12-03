@@ -1,9 +1,20 @@
 apply plugin: 'java'
+//apply plugin: 'com.novoda.bintray-release'
+//
+//publish {
+//    userOrg = 'millszhang'
+//    groupId = 'com.mills.zh'
+//    artifactId = 'annotation-compiler'
+//    publishVersion = '1.0.0'
+//    desc = 'AndTv annotation compliler'
+//    website = 'https://github.com/MillsZhang/AndTv'
+//}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    // 后续将模块上传到JCenter，修改依赖
-    implementation project(':annotation')
+
+//    implementation project(':annotation')
+    implementation 'com.mills.zh:annotation:1.0.0'
 
     implementation 'com.google.auto.service:auto-service:1.0-rc2'
     implementation 'com.squareup:javapoet:1.9.0'

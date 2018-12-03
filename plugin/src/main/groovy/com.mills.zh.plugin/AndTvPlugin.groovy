@@ -13,9 +13,7 @@ public class AndTvPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         def log = project.logger
-        log.error "========================"
-        log.error "精简的MyPlugin，开始修改Class!"
-        log.error "========================"
+        log.error "AndTvPlugin"
 
         if (!(project.plugins.hasPlugin(LibraryPlugin) || project.plugins.hasPlugin(AppPlugin))) {
             throw new IllegalStateException('AndTv plugin can only be applied to android projects')

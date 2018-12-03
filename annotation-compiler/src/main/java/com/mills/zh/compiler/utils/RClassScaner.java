@@ -1,6 +1,6 @@
 package com.mills.zh.compiler.utils;
 
-import com.mills.zh.annotation.WaterfallItem;
+import com.mills.zh.annotation.waterfall.WaterfallItem;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.sun.source.tree.ClassTree;

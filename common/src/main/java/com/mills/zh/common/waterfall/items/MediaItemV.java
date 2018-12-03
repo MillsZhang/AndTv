@@ -2,7 +2,7 @@ package com.mills.zh.common.waterfall.items;
 
 import android.view.View;
 
-import com.mills.zh.annotation.WaterfallItem;
+import com.mills.zh.annotation.waterfall.WaterfallItem;
 import com.mills.zh.common.R2;
 import com.mills.zh.common.waterfall.BaseItem;
 

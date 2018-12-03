@@ -12,7 +12,7 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [module: "common"]
+                arguments = [module: project.getName(), startid: "2000"]
             }
         }
     }
@@ -32,6 +32,7 @@ dependencies {
     api 'com.android.support:support-v4:25.0.0'
     api 'com.android.support:recyclerview-v7:25.0.0'
 
-    api project(':annotation')
+//    api project(':annotation')
+    implementation 'com.mills.zh:annotation:1.0.0'
     annotationProcessor project(':annotation-compiler')
 }

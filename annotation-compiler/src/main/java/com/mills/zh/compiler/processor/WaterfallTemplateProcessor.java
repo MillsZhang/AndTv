@@ -1,7 +1,7 @@
 package com.mills.zh.compiler.processor;
 
 import com.google.auto.service.AutoService;
-import com.mills.zh.annotation.WaterfallTemplate;
+import com.mills.zh.annotation.waterfall.WaterfallTemplate;
 import com.mills.zh.compiler.model.Template;
 import com.mills.zh.compiler.utils.Constants;
 import com.mills.zh.compiler.utils.Logger;
@@ -168,7 +168,7 @@ public class WaterfallTemplateProcessor extends AbstractProcessor {
             while (iterator != null && iterator.hasNext()){
                 Map.Entry<String, Template> item = iterator.next();
 
-                initMapBuilder.add(Constants.WATERFALL_TEMPLATES + ".put($S, new $T());\n", item.getKey(), ClassName.get(item.getValue().getTypeMirror()));
+                initMapBuilder.add(Constants.WATERFALL_TEMPLATES + ".put($L, new $T());\n", item.getValue().getTemplate(), ClassName.get(item.getValue().getTypeMirror()));
             }
             builder.addStaticBlock(initMapBuilder.build());
 
@@ -181,7 +181,8 @@ public class WaterfallTemplateProcessor extends AbstractProcessor {
             builder.addMethod(method.build());
 
             // output WaterfallTemplate interface java file
-            JavaFile.builder(Constants.WATERFALL_PKG, builder.build()).build().writeTo(filer);
+            JavaFile.builder(Constants.ANNOTATION_GEN_PKG + "." + module + Constants.ANNOTATION_GEN_WATERFALL,
+                    builder.build()).build().writeTo(filer);
         } catch (IOException e) {
             e.printStackTrace();
         }

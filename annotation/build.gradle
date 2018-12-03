@@ -1,18 +1,15 @@
 apply plugin: 'java'
-
-group="com.github.millszh"
-
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'annotation'
-    artifact = bintrayName
-    libraryName = 'annotation '
-    libraryDescription = 'annotation '
-    libraryVersion = "1.0.0"
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
-}
+//apply plugin: 'com.novoda.bintray-release'
+//
+//
+//publish {
+//    userOrg = 'millszhang'
+//    groupId = 'com.mills.zh'
+//    artifactId = 'annotation'
+//    publishVersion = '1.0.0'
+//    desc = 'AndTv annotation'
+//    website = 'https://github.com/MillsZhang/AndTv'
+//}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -22,6 +19,3 @@ compileJava {
     sourceCompatibility = '1.7'
     targetCompatibility = '1.7'
 }
-
-//apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
-//apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'

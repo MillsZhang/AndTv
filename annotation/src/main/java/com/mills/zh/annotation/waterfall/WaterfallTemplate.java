@@ -1,4 +1,4 @@
-package com.mills.zh.annotation;
+package com.mills.zh.annotation.waterfall;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,9 +11,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)
-public @interface WaterfallItem {
+public @interface WaterfallTemplate {
 
-    String type() default "";
-
-    int layout() default -1;
+    String template() default "";
 }

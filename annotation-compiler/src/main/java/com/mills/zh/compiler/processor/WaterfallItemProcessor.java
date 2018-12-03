@@ -1,7 +1,7 @@
 package com.mills.zh.compiler.processor;
 
 import com.google.auto.service.AutoService;
-import com.mills.zh.annotation.WaterfallItem;
+import com.mills.zh.annotation.waterfall.WaterfallItem;
 import com.mills.zh.compiler.model.Item;
 import com.mills.zh.compiler.utils.Constants;
 import com.mills.zh.compiler.utils.Logger;
@@ -65,11 +65,12 @@ public class WaterfallItemProcessor extends AbstractProcessor {
     private Trees trees;
     private Logger logger;
     private Filer filer;
+
     private String module;
+    private int startId;
 
     private RClassScaner scaner;
 
-    private int itemTypeStartIdx = Constants.WATERFALL_ITEM_TYPE_START_INDEX;
     private ClassName baseItem = ClassName.get(Constants.WATERFALL_COMMON_PKG, Constants.WATERFALL_BASE_ITEM_CLASS);
     private HashMap<String, Item> items;
 
@@ -88,12 +89,24 @@ public class WaterfallItemProcessor extends AbstractProcessor {
 
         scaner = new RClassScaner(trees, elementUtils, typeUtils);
 
+        String startid = null;
         Map<String, String> options = processingEnv.getOptions();
         if (MapUtils.isNotEmpty(options)) {
             module = options.get("module");
+            startid = options.get("startid");
         }
         if (StringUtils.isEmpty(module)) {
             module = "default";
+        }
+        if (StringUtils.isEmpty(startid)) {
+            startId = Constants.WATERFALL_ITEM_TYPE_DEFAULT_START_ID;
+        } else {
+            try {
+                startId = Integer.parseInt(startid);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                startId = Constants.WATERFALL_ITEM_TYPE_DEFAULT_START_ID;
+            }
         }
         logger.info(module+TAG, "init");
     }
@@ -137,7 +150,7 @@ public class WaterfallItemProcessor extends AbstractProcessor {
                         } else {
                             Item item = new Item();
                             item.setTypeName(Constants.WATERFALL_ITEM_TYPE_PREFIX + type.toUpperCase());
-                            item.setType(itemTypeStartIdx++);
+                            item.setType(startId++);
                             item.setTypeMirror(element.asType());
 
                             QualifiedId qualifiedId = scaner.elementToQualifiedId(element, waterfallitem.layout());
@@ -208,7 +221,7 @@ public class WaterfallItemProcessor extends AbstractProcessor {
 
                 block1.add(
                         "case $L:\n" + "layoutResId = $L;\n break;\n",
-                        item.getValue().getType(), item.getValue().getLayout()
+                        item.getValue().getTypeName(), item.getValue().getLayout()
                 );
             }
             block1.endControlFlow();
@@ -223,7 +236,7 @@ public class WaterfallItemProcessor extends AbstractProcessor {
             );
 
             // add new item
-            block1.add("$T item = null;", baseItem);
+            block1.add("$T item = null;\n", baseItem);
             block1.beginControlFlow("switch (itemType)");
             iterator = items.entrySet().iterator();
             while (iterator != null && iterator.hasNext()){
@@ -231,7 +244,7 @@ public class WaterfallItemProcessor extends AbstractProcessor {
 
                 block1.add(
                         "case $L:\n" + "item = new $T(itemView, itemType);\n break;\n",
-                        item.getValue().getType(), ClassName.get(item.getValue().getTypeMirror())
+                        item.getValue().getTypeName(), ClassName.get(item.getValue().getTypeMirror())
                 );
             }
             block1.endControlFlow();
@@ -284,7 +297,8 @@ public class WaterfallItemProcessor extends AbstractProcessor {
 
 
             // output WaterfallItem interface java file
-            JavaFile.builder(Constants.WATERFALL_PKG, builder.build()).build().writeTo(filer);
+            JavaFile.builder(Constants.ANNOTATION_GEN_PKG + "." + module + Constants.ANNOTATION_GEN_WATERFALL,
+                    builder.build()).build().writeTo(filer);
         } catch (IOException e) {
             e.printStackTrace();
         }
