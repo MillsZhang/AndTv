@@ -71,7 +71,7 @@ public class WaterfallItemProcessor extends AbstractProcessor {
 
     private RClassScaner scaner;
 
-    private ClassName baseItem = ClassName.get(Constants.WATERFALL_COMMON_PKG, Constants.WATERFALL_BASE_ITEM_CLASS);
+    private ClassName baseItem;
     private HashMap<String, Item> items;
 
     @Override
@@ -89,14 +89,20 @@ public class WaterfallItemProcessor extends AbstractProcessor {
 
         scaner = new RClassScaner(trees, elementUtils, typeUtils);
 
+        String waterfallpkg = null;
         String startid = null;
         Map<String, String> options = processingEnv.getOptions();
         if (MapUtils.isNotEmpty(options)) {
             module = options.get("module");
+            waterfallpkg = options.get("waterfallpkg");
             startid = options.get("startid");
         }
         if (StringUtils.isEmpty(module)) {
-            module = "default";
+            module = "common";
+        }
+        if(StringUtils.isEmpty(waterfallpkg)){
+            logger.error(module+TAG, "waterfall package name is null!!!");
+            waterfallpkg = Constants.WATERFALL_COMMON_PKG;
         }
         if (StringUtils.isEmpty(startid)) {
             startId = Constants.WATERFALL_ITEM_TYPE_DEFAULT_START_ID;
@@ -108,6 +114,9 @@ public class WaterfallItemProcessor extends AbstractProcessor {
                 startId = Constants.WATERFALL_ITEM_TYPE_DEFAULT_START_ID;
             }
         }
+
+        baseItem = ClassName.get(waterfallpkg, Constants.WATERFALL_BASE_ITEM_CLASS);
+
         logger.info(module+TAG, "init");
     }
 
@@ -137,27 +146,33 @@ public class WaterfallItemProcessor extends AbstractProcessor {
                         WaterfallItem waterfallitem = element.getAnnotation(WaterfallItem.class);
                         logger.info(module+TAG, "Find WaterfallItem annotation:" + tm.toString());
 
-                        String type = waterfallitem.type();
-                        if(StringUtils.isEmpty(type)){
-                            type = element.getSimpleName().toString();
+                        String[] types = waterfallitem.type();
+                        if(types == null || types.length == 0){
+                            types = new String[]{element.getSimpleName().toString()};
                         }
 
                         if(items == null){
                             items = new HashMap<String, Item>();
                         }
-                        if(items.containsKey(type)){
-                            logger.error(module+TAG, "Find reduplicate waterfall item!");
-                        } else {
-                            Item item = new Item();
-                            item.setTypeName(Constants.WATERFALL_ITEM_TYPE_PREFIX + type.toUpperCase());
-                            item.setType(startId++);
-                            item.setTypeMirror(element.asType());
 
-                            QualifiedId qualifiedId = scaner.elementToQualifiedId(element, waterfallitem.layout());
-                            Id id = scaner.getId(qualifiedId);
+                        for(String type : types){
+                            if(StringUtils.isEmpty(type)){
+                                continue;
+                            }
+                            if(items.containsKey(type)){
+                                logger.error(module+TAG, "Find reduplicate waterfall item!");
+                            } else {
+                                Item item = new Item();
+                                item.setTypeName(Constants.WATERFALL_ITEM_TYPE_PREFIX + type.toUpperCase());
+                                item.setType(startId++);
+                                item.setTypeMirror(element.asType());
 
-                            item.setLayout(id.getCode());
-                            items.put(type, item);
+                                QualifiedId qualifiedId = scaner.elementToQualifiedId(element, waterfallitem.layout());
+                                Id id = scaner.getId(qualifiedId);
+
+                                item.setLayout(id.getCode());
+                                items.put(type, item);
+                            }
                         }
                     }
 

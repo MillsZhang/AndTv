@@ -7,7 +7,7 @@ import com.mills.zh.common.waterfall.Template.FlexibleTemplate;
  * Created by zhangmd on 2018/11/23.
  */
 
-@WaterfallTemplate(template = "poster")
+@WaterfallTemplate(type = {"poster"})
 public class PosterTemplate extends FlexibleTemplate {
     public PosterTemplate(){
         super(12);

@@ -58,7 +58,7 @@ public class WaterfallTemplateProcessor extends AbstractProcessor {
     private Filer filer;
     private String module;
 
-    private ClassName baseTemplate = ClassName.get(Constants.WATERFALL_COMMON_PKG, Constants.WATERFALL_BASE_TEMPLATE_CLASS);
+    private ClassName baseTemplate;
 
     private HashMap<String, Template> templates;
 
@@ -68,13 +68,22 @@ public class WaterfallTemplateProcessor extends AbstractProcessor {
 
         logger = new Logger(processingEnvironment.getMessager());
         filer = processingEnvironment.getFiler();
+
+        String waterfallpkg = null;
         Map<String, String> options = processingEnv.getOptions();
         if (MapUtils.isNotEmpty(options)) {
             module = options.get("module");
+            waterfallpkg = options.get("waterfallpkg");
         }
         if (StringUtils.isEmpty(module)) {
-            module = "default";
+            module = "common";
         }
+        if(StringUtils.isEmpty(waterfallpkg)){
+            logger.error(module+TAG, "waterfall package name is null!!!");
+            waterfallpkg = Constants.WATERFALL_COMMON_PKG;
+        }
+
+        baseTemplate = ClassName.get(waterfallpkg, Constants.WATERFALL_BASE_TEMPLATE_CLASS);
 
         logger.info(module+TAG, "init");
     }
@@ -100,21 +109,27 @@ public class WaterfallTemplateProcessor extends AbstractProcessor {
                         WaterfallTemplate waterfall = element.getAnnotation(WaterfallTemplate.class);
                         logger.info(module+TAG, "Find WaterfallTemplate template annotation:" + tm.toString());
 
-                        String templateName = waterfall.template();
-                        if(StringUtils.isEmpty(templateName)){
-                            templateName = element.getSimpleName().toString();
+                        String[] types = waterfall.type();
+                        if(types == null || types.length == 0){
+                            types = new String[]{element.getSimpleName().toString()};
                         }
 
                         if(templates == null){
                             templates = new HashMap<String, Template>();
                         }
-                        if(templates.containsKey(templateName)){
-                            logger.error(module+TAG, "Find reduplicate template!");
-                        } else {
-                            Template tmp = new Template();
-                            tmp.setTemplate(Constants.WATERFALL_TEMPLATE_PREFIX + templateName.toUpperCase());
-                            tmp.setTypeMirror(element.asType());
-                            templates.put(templateName, tmp);
+
+                        for(String type : types){
+                            if(StringUtils.isEmpty(type)){
+                                continue;
+                            }
+                            if(templates.containsKey(type)){
+                                logger.error(module+TAG, "Find reduplicate template!");
+                            } else {
+                                Template tmp = new Template();
+                                tmp.setTemplate(Constants.WATERFALL_TEMPLATE_PREFIX + type.toUpperCase());
+                                tmp.setTypeMirror(element.asType());
+                                templates.put(type, tmp);
+                            }
                         }
                     }
 

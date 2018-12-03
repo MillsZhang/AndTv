@@ -1,15 +1,26 @@
 apply plugin: 'java'
+
+// upload to jcenter
 //apply plugin: 'com.novoda.bintray-release'
-//
-//
 //publish {
 //    userOrg = 'millszhang'
 //    groupId = 'com.mills.zh'
 //    artifactId = 'annotation'
-//    publishVersion = '1.0.0'
+//    publishVersion = '1.0.1'
 //    desc = 'AndTv annotation'
 //    website = 'https://github.com/MillsZhang/AndTv'
 //}
+
+// upload to local repo
+apply plugin: 'maven'
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: uri('../repo'))         //仓库的路径，此处是项目根目录下的 repo 的文件夹
+        pom.groupId = 'com.mills.zh'            //groupId ，自行定义，一般是包名
+        pom.artifactId = 'annotation'      //artifactId ，自行定义
+        pom.version = '1.0.1'                   //version 版本号
+    }
+}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

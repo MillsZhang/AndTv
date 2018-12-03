@@ -13,5 +13,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface WaterfallTemplate {
 
-    String template() default "";
+    String[] type();
 }

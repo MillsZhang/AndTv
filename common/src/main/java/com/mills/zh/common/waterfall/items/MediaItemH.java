@@ -11,7 +11,7 @@ import com.mills.zh.common.waterfall.BaseItem;
  */
 
 @WaterfallItem(
-        type = "still",
+        type = {"media_h", "media_list_h"},
         layout = R2.layout.waterfall_item_media_h_layout
 )
 public class MediaItemH extends BaseItem {

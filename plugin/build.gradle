@@ -1,7 +1,8 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
+
+// upload to jcenter
 //apply plugin: 'com.novoda.bintray-release'
-//
 //publish {
 //    userOrg = 'millszhang'
 //    groupId = 'com.mills.zh'
@@ -11,6 +12,7 @@ apply plugin: 'maven'
 //    website = 'https://github.com/MillsZhang/AndTv'
 //}
 
+// upload to local repo
 uploadArchives {
     repositories.mavenDeployer {
         repository(url: uri('../repo'))         //仓库的路径，此处是项目根目录下的 repo 的文件夹
